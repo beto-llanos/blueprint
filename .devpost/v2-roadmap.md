@@ -95,14 +95,14 @@ profile.
 
 ## Build order
 
-| Week | Focus |
-|---|---|
-| Week 1 (May 13–19) | Wire up Neo4j AuraDB. Move cache from in-memory to graph. Backfill the existing pre-warmed accounts. |
-| Week 2 (May 20–26) | Founder Match v0 — `/match/[a]/[b]` route + Cypher similarity query + render. |
-| Week 3 (May 27 – Jun 2) | Founder Match polish + LLM-as-judge calibration. Public Archive route. |
-| Week 4 (Jun 3–9) | Team Scan. Polish across all routes. Mobile pass. |
-| Week 5 (Jun 10–14) | Demo video re-record. Deck update. Submit. |
-| Buffer | Jun 15 → Jun 30 if I want to keep shipping past submission. |
+| Week | Focus | Status |
+|---|---|---|
+| Day 1 (May 12) | v1 ship — landing, fetch, Claude pipeline, report, OG, deploy | ✅ |
+| Day 2 (May 13) | v2 ship — storage abstraction + Neo4j adapter + Founder Match + Team Scan + Public Archive | ✅ |
+| Week 1–2 (May 14–26) | Provision AuraDB. Flip prod onto Neo4j. Backfill pre-warmed accounts. Calibrate Match similarity with LLM-as-judge eval set. | pending |
+| Week 3–4 (May 27 – Jun 9) | Polish, mobile pass, optional features (`/u/[login]/matches` top-N from archive). | pending |
+| Week 5 (Jun 10–14) | Demo video re-record. Deck refresh. Submit. | pending |
+| Buffer (Jun 15 – Jun 30) | Public launch, paid org plan, anything that didn't fit. | pending |
 
 ---
 

@@ -65,3 +65,31 @@ export type ScanResult = {
   snapshot: GitHubSnapshot;
   report: AnalysisReport;
 };
+
+export type MatchReport = {
+  compatibility: number;
+  verdict: string;
+  verdictBlurb: string;
+  agree: string[];
+  fight: string[];
+  complement: string[];
+  killerLine: string;
+};
+
+export type TeamReport = {
+  teamName: string;
+  archetypeMix: { archetype: string; count: number }[];
+  collectiveScore: number;
+  strongest: string;
+  blindSpot: string;
+  missingCofounder: {
+    archetype: string;
+    blurb: string;
+  };
+  whatTheyShouldBuild: {
+    name: string;
+    tagline: string;
+    thesis: string;
+  };
+  killerLine: string;
+};
