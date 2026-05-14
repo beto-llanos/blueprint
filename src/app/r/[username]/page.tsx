@@ -4,6 +4,7 @@ import { GitHubError } from "@/lib/github";
 import { scanUser } from "@/lib/scan";
 import { Report } from "@/components/report";
 import { ClaudeError } from "@/lib/claude";
+import { findTopMatches } from "@/lib/match";
 
 export async function generateMetadata({
   params,
@@ -46,7 +47,8 @@ export default async function ReportPage({
 
   try {
     const result = await scanUser(raw);
-    return <Report result={result} />;
+    const suggestions = await findTopMatches(result, 4);
+    return <Report result={result} suggestions={suggestions} />;
   } catch (err) {
     return <ReportError raw={raw} err={err} />;
   }

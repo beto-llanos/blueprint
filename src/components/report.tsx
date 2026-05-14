@@ -4,13 +4,20 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import type { ScanResult } from "@/lib/types";
+import type { Suggestion } from "@/lib/match";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0 },
 };
 
-export function Report({ result }: { result: ScanResult }) {
+export function Report({
+  result,
+  suggestions = [],
+}: {
+  result: ScanResult;
+  suggestions?: Suggestion[];
+}) {
   const { username, snapshot, report } = result;
   const { profile } = snapshot;
   const issue = String(
@@ -209,6 +216,61 @@ export function Report({ result }: { result: ScanResult }) {
           ))}
         </div>
       </motion.section>
+
+      {suggestions.length > 0 && (
+        <>
+          <SectionRule />
+          <motion.section variants={fadeUp} className="mt-12">
+            <Eyebrow>structurally compatible builders</Eyebrow>
+            <p className="mt-3 max-w-xl text-sm text-paper/60">
+              From the archive, ranked by similarity of stack, archetype, and
+              ambition. Tap one to read theirs — or hit{" "}
+              <Link
+                href={`/match/${username}/${suggestions[0].username}`}
+                className="text-accent underline-offset-4 hover:underline"
+              >
+                match
+              </Link>{" "}
+              for the full verdict.
+            </p>
+            <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {suggestions.map((s) => (
+                <li key={s.username}>
+                  <Link
+                    href={`/match/${username}/${s.username}`}
+                    className="group flex items-center gap-4 border border-line p-4 transition hover:border-paper/40"
+                  >
+                    <Image
+                      src={s.avatar_url}
+                      alt={s.username}
+                      width={40}
+                      height={40}
+                      className="size-10 rounded-full grayscale group-hover:grayscale-0"
+                      unoptimized
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-display text-lg text-paper">
+                        @{s.username}
+                      </p>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+                        {s.archetype} · {s.score.toFixed(1)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-display text-2xl text-accent">
+                        {Math.round(s.similarity)}
+                      </p>
+                      <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted">
+                        sim
+                      </p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.section>
+        </>
+      )}
 
       <SectionRule />
 

@@ -1,10 +1,42 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { MatchReport, ScanResult } from "./types";
+import { getStore } from "./store";
 import {
   MATCH_SCHEMA,
   MATCH_SYSTEM_PROMPT,
   buildMatchUserPrompt,
 } from "./prompt-match";
+
+export type Suggestion = {
+  username: string;
+  archetype: string;
+  score: number;
+  similarity: number;
+  avatar_url: string;
+  killerLine: string;
+};
+
+export async function findTopMatches(
+  source: ScanResult,
+  limit = 5,
+): Promise<Suggestion[]> {
+  const store = await getStore();
+  const all = await store.list({ limit: 60 });
+  const others = all.filter(
+    (r) => r.username.toLowerCase() !== source.username.toLowerCase(),
+  );
+  return others
+    .map((r) => ({
+      username: r.username,
+      archetype: r.report.archetype,
+      score: r.report.score,
+      similarity: quantSimilarity(source, r),
+      avatar_url: r.snapshot.profile.avatar_url,
+      killerLine: r.report.killerLine,
+    }))
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, limit);
+}
 
 const client = new Anthropic();
 
