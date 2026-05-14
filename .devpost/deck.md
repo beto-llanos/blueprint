@@ -1,6 +1,6 @@
 # BLUEPRINT — 6-slide deck
 
-Paste into pitch.com / slides.com / Figma. Each slide title is in bold.
+For HACKHAZARDS '26. Paste into pitch.com / slides.com / Figma. Each slide title is in bold.
 
 ---
 
@@ -10,7 +10,7 @@ Paste into pitch.com / slides.com / Figma. Each slide title is in bold.
 >
 > *your repos, decoded into your next startup.*
 >
-> NEXA HACK · May 2026 · Roberto Llanos
+> HACKHAZARDS '26 · Developer Tools track · Roberto Llanos
 
 Visual: ink-black background, Fraunces italic accent on "your next" in orange.
 
@@ -45,8 +45,7 @@ Visual: side-by-side screenshot of input → report.
 
 ## 4. **Live demo**
 
-Just walk through the actual product on screen for 60 seconds.
-If presenting solo, mention: "I'll demo this live in a moment. Here's the URL — anyone in the room can try theirs."
+Walk through the live product on screen for 60-90 seconds. Mention live URL up front so judges can try theirs while you talk.
 
 Visual: URL + QR code to `blueprint-production-50d0.up.railway.app`
 
@@ -58,18 +57,22 @@ Visual: URL + QR code to `blueprint-production-50d0.up.railway.app`
 >
 > Not "summarize this repo" — *spot the obsession running through all of them*.
 >
-> That changed in the last 6 months. BLUEPRINT is the first product to bet on it.
+> That capability is six months old. BLUEPRINT is the first product to bet on it.
 
-Visual: a single quote pulled from a real report, e.g. *"You've written the thesis three times in three different repos — at some point that stops being research and starts being avoidance."*
+Visual: pull a real quote from a generated report. Suggestion:
+> *"You've written the thesis three times in three different repos — at some point that stops being research and starts being avoidance."*
 
 ---
 
-## 6. **What's next**
+## 6. **Roadmap — what we're shipping during HACKHAZARDS**
 
-> – Public report library (opt-in, become a portfolio)
-> – Founder Match: "your GitHub is structurally compatible with this builder"
-> – BLUEPRINT for teams: read your org's repos, find the missing product
+> **Now (v1, shipped May 12):** Public report generator for any GitHub. Editorial UI, OG share cards, in-memory cache.
 >
-> Built solo in 48h. The hard part — the analysis — already works. The rest is distribution.
+> **Next 6 weeks (v2):**
+> – **Founder Match** — graph-based pairing. Your GitHub vs. the global archive: "structurally compatible co-founders" *(Neo4j track candidate).*
+> – **Archive** — opt-in public report library. Each one becomes a portfolio piece + viral loop.
+> – **Team Scan** — point at an org, get a composite report on its builders.
+>
+> Built solo. Currently 1380 LOC, ~$0.04 per report.
 
-Visual: logo + email signup field.
+Visual: a small graph diagram (two GitHub avatars connected by a line labelled "structurally compatible"), with the rest faded.

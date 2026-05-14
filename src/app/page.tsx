@@ -61,7 +61,7 @@ export default function Home() {
 
       <footer className="border-t border-line px-8 py-6 sm:px-14">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted sm:flex-row sm:items-center sm:justify-between">
-          <span>nexa hack · 2026</span>
+          <span>built for builders</span>
           <span>read your commits like a fortune teller</span>
         </div>
       </footer>
