@@ -42,6 +42,12 @@ const client = new Anthropic();
 
 export class MatchError extends Error {}
 
+const MATCH_TTL_MS = 60 * 60 * 1000;
+const matchCache = new Map<
+  string,
+  { value: MatchReport; expires: number }
+>();
+
 const ARCHETYPE_AXES: Record<string, [number, number]> = {
   "The Tinkerer": [-1, 1],
   "The Architect": [1, 1],
@@ -96,6 +102,10 @@ export async function generateMatchReport(
   a: ScanResult,
   b: ScanResult,
 ): Promise<MatchReport> {
+  const cacheKey = `${a.username.toLowerCase()}::${b.username.toLowerCase()}`;
+  const hit = matchCache.get(cacheKey);
+  if (hit && Date.now() < hit.expires) return hit.value;
+
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 8000,
@@ -128,6 +138,10 @@ export async function generateMatchReport(
   }
   try {
     const parsed = JSON.parse(text.text) as MatchReport;
+    matchCache.set(cacheKey, {
+      value: parsed,
+      expires: Date.now() + MATCH_TTL_MS,
+    });
     return parsed;
   } catch {
     throw new MatchError("Failed to parse match response");

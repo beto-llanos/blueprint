@@ -13,6 +13,20 @@ export class TeamError extends Error {}
 
 export const TEAM_MAX_MEMBERS = 6;
 
+const TEAM_TTL_MS = 60 * 60 * 1000;
+const teamCache = new Map<
+  string,
+  { value: TeamReport; expires: number }
+>();
+
+function teamCacheKey(teamName: string, members: ScanResult[]): string {
+  const sorted = members
+    .map((m) => m.username.toLowerCase())
+    .sort()
+    .join(",");
+  return `${teamName.toLowerCase()}::${sorted}`;
+}
+
 export async function scanTeam(
   rawUsernames: string[],
 ): Promise<{ members: ScanResult[]; errors: { username: string; error: string }[] }> {
@@ -47,6 +61,10 @@ export async function generateTeamReport(
   if (members.length < 2) {
     throw new TeamError("Need at least 2 valid builders for a team scan");
   }
+  const cacheKey = teamCacheKey(teamName, members);
+  const hit = teamCache.get(cacheKey);
+  if (hit && Date.now() < hit.expires) return hit.value;
+
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 8000,
@@ -78,7 +96,12 @@ export async function generateTeamReport(
     throw new TeamError("No text response from Claude");
   }
   try {
-    return JSON.parse(text.text) as TeamReport;
+    const parsed = JSON.parse(text.text) as TeamReport;
+    teamCache.set(cacheKey, {
+      value: parsed,
+      expires: Date.now() + TEAM_TTL_MS,
+    });
+    return parsed;
   } catch {
     throw new TeamError("Failed to parse team response");
   }
