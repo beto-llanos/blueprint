@@ -18,12 +18,16 @@ let cached: ReportStore | null = null;
 export async function getStore(): Promise<ReportStore> {
   if (cached) return cached;
 
-  if (process.env.NEO4J_URI && process.env.NEO4J_USER && process.env.NEO4J_PASSWORD) {
+  const uri = process.env.NEO4J_URI;
+  const user = process.env.NEO4J_USER ?? process.env.NEO4J_USERNAME;
+  const password = process.env.NEO4J_PASSWORD;
+  if (uri && user && password) {
     const { Neo4jStore } = await import("./neo4j");
     cached = new Neo4jStore({
-      uri: process.env.NEO4J_URI,
-      user: process.env.NEO4J_USER,
-      password: process.env.NEO4J_PASSWORD,
+      uri,
+      user,
+      password,
+      database: process.env.NEO4J_DATABASE,
     });
   } else {
     const { InMemoryStore } = await import("./in-memory");

@@ -1,18 +1,25 @@
 import type { ScanResult } from "@/lib/types";
 import type { ListOptions, ReportStore } from "./index";
 
-type DriverConfig = { uri: string; user: string; password: string };
+type DriverConfig = {
+  uri: string;
+  user: string;
+  password: string;
+  database?: string;
+};
+
+type Neo4jSession = {
+  run: (
+    q: string,
+    params?: Record<string, unknown>,
+  ) => Promise<{
+    records: Array<{ get: (k: string) => unknown }>;
+  }>;
+  close: () => Promise<void>;
+};
 
 type Neo4jDriver = {
-  session(): {
-    run: (
-      q: string,
-      params?: Record<string, unknown>,
-    ) => Promise<{
-      records: Array<{ get: (k: string) => unknown }>;
-    }>;
-    close: () => Promise<void>;
-  };
+  session(opts?: { database?: string }): Neo4jSession;
   close: () => Promise<void>;
 };
 
@@ -34,7 +41,9 @@ export class Neo4jStore implements ReportStore {
         this.config.uri,
         neo4j.default.auth.basic(this.config.user, this.config.password),
       ) as unknown as Neo4jDriver;
-      const session = this.driver.session();
+      const session = this.driver.session(
+        this.config.database ? { database: this.config.database } : undefined,
+      );
       try {
         await session.run(
           "CREATE CONSTRAINT builder_login IF NOT EXISTS FOR (b:Builder) REQUIRE b.login IS UNIQUE",
@@ -48,7 +57,9 @@ export class Neo4jStore implements ReportStore {
 
   async save(value: ScanResult): Promise<void> {
     await this.init();
-    const session = this.driver!.session();
+    const session = this.driver!.session(
+      this.config.database ? { database: this.config.database } : undefined,
+    );
     try {
       const langs = value.snapshot.languageWeights
         .slice(0, 6)
@@ -75,7 +86,9 @@ export class Neo4jStore implements ReportStore {
 
   async get(username: string): Promise<ScanResult | null> {
     await this.init();
-    const session = this.driver!.session();
+    const session = this.driver!.session(
+      this.config.database ? { database: this.config.database } : undefined,
+    );
     try {
       const res = await session.run(
         `MATCH (b:Builder { login: $login })
@@ -94,7 +107,9 @@ export class Neo4jStore implements ReportStore {
   async list(opts: ListOptions = {}): Promise<ScanResult[]> {
     await this.init();
     const { limit = 24, archetype, language } = opts;
-    const session = this.driver!.session();
+    const session = this.driver!.session(
+      this.config.database ? { database: this.config.database } : undefined,
+    );
     try {
       const filters: string[] = [];
       const params: Record<string, unknown> = { limit };
@@ -125,7 +140,9 @@ export class Neo4jStore implements ReportStore {
 
   async count(): Promise<number> {
     await this.init();
-    const session = this.driver!.session();
+    const session = this.driver!.session(
+      this.config.database ? { database: this.config.database } : undefined,
+    );
     try {
       const res = await session.run(
         `MATCH (b:Builder) RETURN count(b) AS n`,
