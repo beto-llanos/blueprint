@@ -133,7 +133,7 @@ export class Neo4jStore implements ReportStore {
         ${where}
         RETURN b.payload AS payload
         ORDER BY b.updatedAt DESC
-        LIMIT $limit
+        LIMIT toInteger($limit)
       `;
       const res = await session.run(query, params);
       return res.records.map(
