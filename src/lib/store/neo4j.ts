@@ -36,20 +36,26 @@ export class Neo4jStore implements ReportStore {
     if (this.driver) return;
     if (this.initPromise) return this.initPromise;
     this.initPromise = (async () => {
-      const neo4j = await import("neo4j-driver");
-      this.driver = neo4j.default.driver(
-        this.config.uri,
-        neo4j.default.auth.basic(this.config.user, this.config.password),
-      ) as unknown as Neo4jDriver;
-      const session = this.driver.session(
-        this.config.database ? { database: this.config.database } : undefined,
-      );
       try {
-        await session.run(
-          "CREATE CONSTRAINT builder_login IF NOT EXISTS FOR (b:Builder) REQUIRE b.login IS UNIQUE",
+        const neo4j = await import("neo4j-driver");
+        this.driver = neo4j.default.driver(
+          this.config.uri,
+          neo4j.default.auth.basic(this.config.user, this.config.password),
+        ) as unknown as Neo4jDriver;
+        const session = this.driver.session(
+          this.config.database ? { database: this.config.database } : undefined,
         );
-      } finally {
-        await session.close();
+        try {
+          await session.run(
+            "CREATE CONSTRAINT builder_login IF NOT EXISTS FOR (b:Builder) REQUIRE b.login IS UNIQUE",
+          );
+        } finally {
+          await session.close();
+        }
+      } catch (err) {
+        this.driver = null;
+        this.initPromise = null;
+        throw err;
       }
     })();
     return this.initPromise;
