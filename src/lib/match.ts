@@ -1,3 +1,4 @@
+import Anthropic from "@anthropic-ai/sdk";
 import type { MatchReport, ScanResult } from "./types";
 import { getStore } from "./store";
 import {
@@ -5,7 +6,6 @@ import {
   MATCH_SYSTEM_PROMPT,
   buildMatchUserPrompt,
 } from "./prompt-match";
-import { completeJSON } from "./openrouter";
 
 export type Suggestion = {
   username: string;
@@ -37,6 +37,8 @@ export async function findTopMatches(
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, limit);
 }
+
+const client = new Anthropic();
 
 export class MatchError extends Error {}
 
@@ -104,15 +106,38 @@ export async function generateMatchReport(
   const hit = matchCache.get(cacheKey);
   if (hit && Date.now() < hit.expires) return hit.value;
 
-  const json = await completeJSON({
-    system: MATCH_SYSTEM_PROMPT,
-    user: buildMatchUserPrompt(a, b),
-    schema: MATCH_SCHEMA,
-    maxTokens: 8000,
-    title: "blueprint",
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 8000,
+    system: [
+      {
+        type: "text",
+        text: MATCH_SYSTEM_PROMPT,
+        cache_control: { type: "ephemeral" },
+      },
+    ],
+    thinking: { type: "disabled" },
+    output_config: {
+      effort: "low",
+      format: {
+        type: "json_schema",
+        schema: MATCH_SCHEMA,
+      },
+    },
+    messages: [
+      {
+        role: "user",
+        content: buildMatchUserPrompt(a, b),
+      },
+    ],
   });
+
+  const text = response.content.find((b) => b.type === "text");
+  if (!text || text.type !== "text") {
+    throw new MatchError("No text response from Claude");
+  }
   try {
-    const parsed = JSON.parse(json) as MatchReport;
+    const parsed = JSON.parse(text.text) as MatchReport;
     matchCache.set(cacheKey, {
       value: parsed,
       expires: Date.now() + MATCH_TTL_MS,

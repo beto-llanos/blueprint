@@ -1,3 +1,4 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { scanUser } from "./scan";
 import type { ScanResult, TeamReport } from "./types";
 import {
@@ -5,7 +6,8 @@ import {
   TEAM_SYSTEM_PROMPT,
   buildTeamUserPrompt,
 } from "./prompt-team";
-import { completeJSON } from "./openrouter";
+
+const client = new Anthropic();
 
 export class TeamError extends Error {}
 
@@ -63,15 +65,38 @@ export async function generateTeamReport(
   const hit = teamCache.get(cacheKey);
   if (hit && Date.now() < hit.expires) return hit.value;
 
-  const json = await completeJSON({
-    system: TEAM_SYSTEM_PROMPT,
-    user: buildTeamUserPrompt(teamName, members),
-    schema: TEAM_SCHEMA,
-    maxTokens: 8000,
-    title: "blueprint",
+  const response = await client.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 8000,
+    system: [
+      {
+        type: "text",
+        text: TEAM_SYSTEM_PROMPT,
+        cache_control: { type: "ephemeral" },
+      },
+    ],
+    thinking: { type: "disabled" },
+    output_config: {
+      effort: "low",
+      format: {
+        type: "json_schema",
+        schema: TEAM_SCHEMA,
+      },
+    },
+    messages: [
+      {
+        role: "user",
+        content: buildTeamUserPrompt(teamName, members),
+      },
+    ],
   });
+
+  const text = response.content.find((b) => b.type === "text");
+  if (!text || text.type !== "text") {
+    throw new TeamError("No text response from Claude");
+  }
   try {
-    const parsed = JSON.parse(json) as TeamReport;
+    const parsed = JSON.parse(text.text) as TeamReport;
     teamCache.set(cacheKey, {
       value: parsed,
       expires: Date.now() + TEAM_TTL_MS,
